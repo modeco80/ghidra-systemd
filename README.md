@@ -2,8 +2,7 @@
 
 YAJSW is sinful. I don't like it. It arguably makes Ghidra Server unstable.
 
-So, let's get rid of it!
-
+So, let's get rid of it, and replace it with systemd!
 
 # How to install
 
@@ -16,4 +15,14 @@ $ [editor] install # edit variables to match your setup
 ```
 
 ...
+
 profit?
+
+# Notes
+
+- Java detection currently isn't implemented
+	- The default is skewed for Arch Linux because it's what I run on everything, but altering to run on another distribution should Just Work:tm:
+
+- You will need to install on a machine with direct public IP access
+	- NAT doesn't play nicely with Ghidra Server yet
+- `./svrAdmin` will require `sudo -u ghidra` to run (but should work fine besides that)

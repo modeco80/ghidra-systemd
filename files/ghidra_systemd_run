@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# This is a wrapper script which ends up executing java
+# This is a wrapper script which ends up executing java for the systemd service,
+# to avoid overcomplicating it. It also takes care of several things needed to get
+# everything to work.
 
 # Expected env vars
 # JAVA - jre to run
@@ -30,7 +32,7 @@ REQUIRED_ARGS="-cp $(joinarray : ${CLASSPATH[@]}) -Djava=${JAVA} -Dghidra_home=$
 # may not be good in other cases.
 EXTRA_JAVA_ARGUMENTS=(
 	"-Xms2G"
-	"-Xmx8G"
+	"-Xmx2G"
 	"-XX:+UnlockExperimentalVMOptions"
 	"-XX:+DisableExplicitGC"
 	"-XX:+ParallelRefProcEnabled"
