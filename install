@@ -44,7 +44,7 @@ configure_file() {
 }
 
 configure_files() {
-	cp -rv files stage
+	cp -rv files/ stage/
 
 	if $ghidra_allow_anonymous; then
 		ghidra_anonymous_arg="-anonymous"
