@@ -8,8 +8,25 @@ Type=simple
 User=ghidra
 Group=ghidra
 
-# Pull out a bunch of stuff the ghidra server obviously won't need
-# TODO: We should even restrict syscalls using systemd seccomp filtering
+# Misc service hardening options
+
+RestrictRealtime=yes
+# Ghidra really only needs INET, ipv6 kinda works but it's a bit janky
+# and ghidra tends to freak out if you use it
+RestrictAddressFamilies=AF_INET
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=no
+
+NoNewPrivileges=yes
+
+MountAPIVFS=yes
+DevicePolicy=closed
+PrivateDevices=yes
+PrivateTmp=yes
+
+BindReadOnlyPaths=@ghidra_home@
+BindPaths=@ghidra_root@
+
 ProtectHome=yes
 ProtectSystem=strict
 ProtectHostname=yes
@@ -17,23 +34,17 @@ ProtectControlGroups=yes
 ProtectKernelModules=yes
 ProtectKernelLogs=yes
 ProtectKernelTunables=yes
+ProtectProc=invisible
 LockPersonality=yes
-DevicePolicy=closed
-#MountAPIVFS=yes
-PrivateDevices=yes
-PrivateTmp=yes
-
-ReadWritePaths=@ghidra_home@ @ghidra_root@
 
 Environment=JAVA=@ghidra_java@
 Environment=GHIDRA_HOME=@ghidra_home@
 Environment=GHIDRA_ROOT=@ghidra_root@
 Environment=GHIDRA_ARGS="-a0 -i @public_ip@ @anonymous@"
 
-# this is a certified mess. Thanks lennart :)
 ExecStart=@ghidra_root@/ghidra_systemd_run
 Restart=always
-RestartSec=5
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
