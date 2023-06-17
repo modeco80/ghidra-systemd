@@ -1,0 +1,77 @@
+#!/bin/bash
+
+
+read_boolean() {
+	result="";
+	read -rp "$1 " result
+	if [[ "$result" == "yes" ]] || [[ "$result" == "true" ]]; then
+		result=true
+	elif [[ "$result" == "no" ]] || [[ "$result" == "false" ]]; then
+		result=false
+	else
+		echo "Invalid verb (yes/no, true/false are expected)."
+		read_boolean "$1"
+	fi
+}
+
+# config stuff (modify this)
+ghidra_install_dir="/opt/ghidra"
+ghidra_root="$(getent passwd ghidra | cut -d':' -f6)"
+ghidra_allow_anonymous=false
+ghidra_public_ip="$(curl -s eth0.me)"
+
+
+dump_config() {
+	echo "Configuration (for review):"
+	echo "Ghidra Installation Directory: ${ghidra_install_dir}"
+	echo "Ghidra Server Root: ${ghidra_root}"
+	echo "Public IP Address: ${ghidra_public_ip}"
+	echo "Ghidra allowing anonymous access: ${ghidra_allow_anonymous}"
+
+	read_boolean "Is it OK to continue?"
+	if [[ ${result} == false ]]; then
+		exit;
+	fi
+}
+
+apply() {
+	cp -rv files/ stage/
+
+	if $ghidra_allow_anonymous; then
+		ghidra_anonymous_arg="-anonymous"
+	fi
+
+	# Configure files as needed
+
+	cat stage/ghidra.confd | \
+		sed "s|@ghidra_home@|${ghidra_install_dir}|" | \
+		sed "s|@ghidra_root@|${ghidra_root}|" | \
+		sed "s|@public_ip@|${ghidra_public_ip}|" | \
+		sed "s|@anonymous@|${ghidra_anonymous_arg}|" > stage/ghidra.confd.configured;
+
+	cat stage/ghidra.service | \
+		sed "s|@ghidra_home@|${ghidra_install_dir}|" | \
+		sed "s|@ghidra_root@|${ghidra_root}|" > stage/ghidra.service.configured;
+
+	cat stage/server.conf | \
+		sed "s|@ghidra_root@|${ghidra_root}|" > stage/server.conf.configured;
+
+	# copy files into the right place
+	cp stage/ghidra.confd.configured /etc/conf.d/ghidra
+	cp stage/ghidra.service.configured /etc/systemd/system/ghidra.service
+
+	# ditto for ghidra server stuff
+	cp -rv stage/ghidra_systemd_run stage/log4j/ ${ghidra_root}/
+	mkdir ${ghidra_root}/repositories
+
+	chown -Rvv ghidra:ghidra ${ghidra_root}/
+
+	# Replace server.conf (but keep a backup just in case we ended up breaking things)
+	cp ${ghidra_install_dir}/server/server.conf ${ghidra_install_dir}/server/server.conf.ghidra
+	cp stage/server.conf.configured ${ghidra_install_dir}/server/server.conf
+
+	echo "Done. I hope."
+}
+
+dump_config
+apply

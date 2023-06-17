@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# This is a wrapper script which ends up executing java
+
+# Expected env vars
+# JAVA - jre to run
+# GHIDRA_HOME - path to Ghidra
+# GHIDRA_ROOT - path to Ghidra server root
+# GHIDRA_ARGS - Ghidra server arguments (do not pass a root here!)
+
+CLASSPATH_FRAG="${GHIDRA_HOME}/Ghidra/Features/GhidraServer/data/classpath.frag"
+CLASSPATH=(
+	# convert from YAJSW/java .properties syntax to array
+	# Note that this doesn't use eval because eval is a security risk
+	# (and as shown, it isn't needed)
+	$(cat $CLASSPATH_FRAG| cut -d'}' -f2 | sed "s|^|${GHIDRA_HOME}|")
+)
+
+
+joinarray() {
+	local IFS="$1";
+	shift;
+	echo "$*";
+}
+
+# required JRE arguments
+REQUIRED_ARGS="-cp $(joinarray : ${CLASSPATH[@]}) -Djava=${JAVA} -Dghidra_home=${GHIDRA_HOME} -Dclasspath_frag=${CLASSPATH_FRAG} -Dos_dir=${GHIDRA_HOME}/Ghidra/Features/GhidraServer/os/linux64"
+
+# These can be tuned up for your specific environment. This is good for mine,
+# may not be good in other cases.
+EXTRA_JAVA_ARGUMENTS=(
+	"-Xms2G"
+	"-Xmx8G"
+	"-XX:+UnlockExperimentalVMOptions"
+	"-XX:+DisableExplicitGC"
+	"-XX:+ParallelRefProcEnabled"
+	"-XX:+PerfDisableSharedMem"
+	"-XX:+UseCompressedOops"
+	"-XX:-UsePerfData"
+	"-XX:MaxGCPauseMillis=5"
+	"-XX:ParallelGCThreads=8"
+	"-XX:ConcGCThreads=8"
+	"-XX:ReservedCodeCacheSize=2048m"
+	"-XX:+UseCodeCacheFlushing"
+	"-XX:+UseShenandoahGC"
+	
+	# Don't remove this though
+	"-Dlog4j.configurationFile=file:${GHIDRA_ROOT}/log4j/generic.log4j.xml"
+)
+
+exec ${JAVA} ${REQUIRED_ARGS} ${EXTRA_JAVA_ARGUMENTS[@]} ghidra.server.remote.GhidraServer ${GHIDRA_ARGS} ${GHIDRA_ROOT}/repositories

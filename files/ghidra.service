@@ -1,0 +1,36 @@
+[Unit]
+Description=Ghidra Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=ghidra
+Group=ghidra
+
+# Pull out a bunch of stuff the ghidra server obviously won't need
+# TODO: We should even restrict syscalls using systemd seccomp filtering
+ProtectHome=yes
+ProtectSystem=strict
+ProtectHostname=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectKernelTunables=yes
+LockPersonality=yes
+DevicePolicy=closed
+#MountAPIVFS=yes
+PrivateDevices=yes
+PrivateTmp=yes
+
+ReadWritePaths=@ghidra_home@ @ghidra_root@
+
+EnvironmentFile=/etc/conf.d/ghidra
+
+# this is a certified mess. Thanks lennart :)
+ExecStart=@ghidra_root@/ghidra_systemd_run
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

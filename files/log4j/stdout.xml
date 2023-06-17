@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Console name="stdout" target="SYSTEM_OUT">
+	<PatternLayout pattern="%-5p %m (%c{1}) %ex %n"/>  
+</Console>
