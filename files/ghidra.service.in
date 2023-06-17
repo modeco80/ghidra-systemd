@@ -25,7 +25,10 @@ PrivateTmp=yes
 
 ReadWritePaths=@ghidra_home@ @ghidra_root@
 
-EnvironmentFile=/etc/conf.d/ghidra
+Environment=JAVA=/usr/lib/jvm/java-20-openjdk/bin/java
+Environment=GHIDRA_HOME=@ghidra_home@
+Environment=GHIDRA_ROOT=@ghidra_root@
+Environment=GHIDRA_ARGS="-a0 -i @public_ip@ @anonymous@"
 
 # this is a certified mess. Thanks lennart :)
 ExecStart=@ghidra_root@/ghidra_systemd_run

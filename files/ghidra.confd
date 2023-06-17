@@ -1,7 +1,0 @@
-#/etc/conf.d/ghidra
-# Paths to java and ghidra
-# (edit JAVA path if need be)
-JAVA=/usr/lib/jvm/java-20-openjdk/bin/java
-GHIDRA_HOME=@ghidra_home@
-GHIDRA_ROOT=@ghidra_root@
-GHIDRA_ARGS="-a0 -i @public_ip@ @anonymous@"
