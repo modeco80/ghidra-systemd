@@ -1,11 +1,7 @@
 #!/bin/bash
 
 # config stuff (modify this section of the script to fit your environment)
-ghidra_java="/usr/lib/jvm/java-20-openjdk/bin/java"
-ghidra_install_dir="/opt/ghidra"
-ghidra_root="$(getent passwd ghidra | cut -d':' -f6)"
-ghidra_allow_anonymous=false
-ghidra_public_ip="$(curl -s eth0.me)"
+. ./config
 
 # boolean goes into $result when this function exits
 read_boolean() {
@@ -53,6 +49,7 @@ configure_files() {
 	# Configure files as needed
 	configure_file stage/ghidra.service.in stage/ghidra.service
 	configure_file stage/server.conf.in stage/server.conf
+	configure_file stage/svradmin.in stage/svradmin
 }
 
 install_configured_files() {
@@ -68,6 +65,10 @@ install_configured_files() {
 	# Replace server.conf (but keep a backup just in case we ended up breaking things)
 	cp ${ghidra_install_dir}/server/server.conf ${ghidra_install_dir}/server/server.conf.ghidra
 	cp stage/server.conf ${ghidra_install_dir}/server/server.conf
+
+	# install svradmin wrapper (RUN THIS!)
+	cp stage/svradmin ${ghidra_root}/
+	chmod +x ${ghidra_root}/svradmin
 
 	echo "Done. I hope."
 	rm -rf stage

@@ -1,0 +1,3 @@
+#!/bin/bash
+# forwarder for svrAdmin
+sudo -u ghidra @ghidra_home@/server/svrAdmin $@

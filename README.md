@@ -1,56 +1,80 @@
-# Ghidra Without YAJSW
+# Ghidra Without YAJSW (systemd)
 
-YAJSW is sinful. I don't like it. It arguably makes Ghidra Server unstable and hard to deal with.
+YAJSW is awful, I don't like it, and it arguably makes Ghidra Server a pain to run.
 
-So, let's get rid of it, and replace it with systemd (enforcing best practices when running services in the process)!
+Therefore, these scripts provide the ability to replace it with systemd (enforcing best practices when running services in the process).
 
-# How to install
+# Installation
 
-Note that command line excerpts follow Arch Linux "# means root/$ means user" documentation paragidm.
+Installation is relatively easy, and consists of a few key steps.
 
-First create a system `ghidra` user. This can be done with the following command
+Command line excerpts follow Arch Linux "# means root/$ means user" documentation paragidm.
+
+## Creating the service user
+
+First, create a system `ghidra` user that will be used to run the server. 
+
+This can be done with the following command:
 
 `# useradd -mrU -s /sbin/nologin -d /srv/ghidra -k /dev/null ghidra` 
 
 This creates a system `ghidra` user with the following properties:
 
-- its shell is set to nologin, so it can't be logged into (even if it was somehow exposed, since system users cant be logged into via SSH/etc anyways)
-- the home directory is /srv/ghidra, with no additional skeleton files being placed (that's what the `-k /dev/null` option does)
+- It's shell is set to nologin, so it can't be logged into (basically death insurance, since system users can't be logged into via normal means)
+- The home directory for the user is `/srv/ghidra`
+- The skeleton directory is set to `/dev/null`, disabling skeleton file copying (only the directory will be made, and we won't get a bunch of files that aren't needed for the service)
 
-Next, use your favorite text editor to edit the variables at the top of the ./install file to match your setup:
+Note that the home directory can be anywhere, but this is what I've used and it works, so YMMV changing it (the script uses getpwent anyways like it should, so I don't think anything would go too wrong? But I'm not sure)
 
-- Java path
-- Ghidra installation directory
+## Edit configuration
+
+Next, use your favorite text editor to edit the variables in the `config.example` file to match your setup, and save it to `config`.
+
+The variables you need to edit are:
+
+- Path to `java` executable
+- Ghidra installation path
 - Ghidra anonymous read access allowed (This is opt-in, and Ghidra Server requires individual projects to opt in as well)
+- (Optional) Listen IP address (the default uses `eth0.me` to figure it out, but if you have a desired interface, you can provide one)
 
-After you've done that, you can now run
+## Running installation
 
-`# ./install`
+After you've done that, you can now run the install script with `# ./install`.
 
-It will prompt with the configuration, and ask if it's ok to continue. If so, type `yes` or `y`, and the installation will begin.
+It will display the configuration, and ask if it's OK to continue with the installation.
 
-Once installed, a `ghidra.service` unit is now available to launch your Ghidra Server.
+Upon reviewing, if the configuration is correct, type `yes` or `y`, and the installation will commence.
 
-You can now copy an existing repository folder into `/srv/ghidra/repositories` at this point if migrating an existing server.
+Once everything is installed, a `ghidra.service` unit is now available to launch your Ghidra server.
+
+Additionally, at this point, you can now copy an existing repository folder into `/srv/ghidra/repositories` to migrate an existing server installation.
+
+## Autostart
 
 Once done, you can use
 
 `# systemctl enable --now ghidra`
 
-to enable (make the service start at boot) and start your Ghidra server.
+to enable (make the service automatically start at boot) and start your Ghidra server.
 
-Note that logs will be placed in to the systemd journal, and no log files will be updated when using the service. 
+## Logs
+
+Note that logs will be placed in to the systemd journal, and no log files will be updated or created when using the service. This is by design.
 
 To look at logs for your Ghidra server, run
 
-`$ journalctl -u ghidra`
+`$ journalctl -u ghidra` (or what have you)
 
-# Notes
+## Administration
+
+You will need to use `[your ghidra user's home]/svradmin` to launch the svrAdmin tool. 
+
+You can also just use `sudo -u ghidra`, but the helper is nicer to use IMO
+
+# Notes/Caveats
 
 - Java path detection currently isn't implemented
 	- The default is skewed for Arch Linux because it's what I run on everything, but you can change it
 
 - You will need to install on a machine with direct public IP access
 	- NAT doesn't play nicely with Ghidra Server yet
-- `./svrAdmin` will require `sudo -u ghidra` to run (but should work fine besides that)
-	- You could create a wrapper script that just consists of `sudo -u ghidra @ghidra_home@/server/svrAdmin $@` (i may do so)

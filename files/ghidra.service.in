@@ -13,7 +13,7 @@ Group=ghidra
 RestrictRealtime=yes
 # Ghidra really only needs INET, ipv6 kinda works but it's a bit janky
 # and ghidra tends to freak out if you use it
-RestrictAddressFamilies=AF_INET
+#RestrictAddressFamilies=AF_INET
 RestrictSUIDSGID=yes
 MemoryDenyWriteExecute=no
 

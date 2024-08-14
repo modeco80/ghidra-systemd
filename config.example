@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Sample configuration for ./install
+# Change this to meet your system and put it in ./config
+
+ghidra_java="/usr/lib/jvm/java-22-openjdk/bin/java"
+ghidra_install_dir="/opt/ghidra"
+ghidra_root="$(getent passwd ghidra | cut -d':' -f6)"
+ghidra_allow_anonymous=false
+ghidra_public_ip="$(curl -s eth0.me)"
+
+
